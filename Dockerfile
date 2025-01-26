@@ -29,8 +29,5 @@ EXPOSE 8501
 ENV CHROME_BIN=/usr/bin/chromium
 ENV CHROMEDRIVER_PATH=/usr/bin/chromedriver
 
-# Health check for the container
-HEALTHCHECK CMD curl --fail http://localhost:8501/_stcore/health
-
 # Command to run the application
 CMD ["streamlit", "run", "src/app.py", "--server.port=8501", "--server.address=0.0.0.0"] 

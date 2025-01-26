@@ -2,25 +2,18 @@ from __future__ import annotations
 from typing import Literal, TypedDict
 import asyncio
 import os
+import time
 
 import streamlit as st
 import json
-import logfire
 from supabase import Client
 from openai import AsyncOpenAI
 
-# Import all the message part classes
 from pydantic_ai.messages import (
-    ModelMessage,
     ModelRequest,
     ModelResponse,
-    SystemPromptPart,
     UserPromptPart,
     TextPart,
-    ToolCallPart,
-    ToolReturnPart,
-    RetryPromptPart,
-    ModelMessagesTypeAdapter
 )
 from rag_agent import pydantic_ai_expert, PydanticAIDeps
 
@@ -33,9 +26,6 @@ supabase: Client = Client(
     os.getenv("SUPABASE_URL"),
     os.getenv("SUPABASE_SERVICE_KEY")
 )
-
-# Configure logfire to suppress warnings (optional)
-logfire.configure(send_to_logfire='never')
 
 class ChatMessage(TypedDict):
     """Format of messages sent to the browser/API."""
@@ -104,7 +94,18 @@ async def run_agent_with_streaming(user_input: str):
         )
 
 
+# Add a startup flag to session state
+if 'app_ready' not in st.session_state:
+    st.session_state.app_ready = False
+
 async def main():
+    # Set page config at the start
+    st.set_page_config(
+        page_title="Pydantic AI Expert",
+        page_icon="🤖",
+        layout="wide"
+    )
+    
     st.title("Pydantic AI Expert")
     st.write("Ask any question about Pydantic AI, the hidden truths of the beauty of this framework lie within.")
 
@@ -140,4 +141,7 @@ async def main():
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except Exception as e:
+        st.error(f"An error occurred: {str(e)}")
