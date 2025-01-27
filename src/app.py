@@ -107,7 +107,7 @@ async def main():
     )
     
     st.title("Mercoa Expert")
-    st.write("Ask any question about Mercoa, the hidden truths of the beauty of this framework lie within.")
+    st.write("Ask any question about Mercoa Api Docs")
 
     # Initialize chat history in session state if not present
     if "messages" not in st.session_state:
