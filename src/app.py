@@ -15,7 +15,7 @@ from pydantic_ai.messages import (
     UserPromptPart,
     TextPart,
 )
-from rag_agent import pydantic_ai_expert, PydanticAIDeps
+from rag_agent import mercoa_expert, MercoaAIDeps
 
 # Load environment variables
 from dotenv import load_dotenv
@@ -61,13 +61,13 @@ async def run_agent_with_streaming(user_input: str):
     while maintaining the entire conversation in `st.session_state.messages`.
     """
     # Prepare dependencies
-    deps = PydanticAIDeps(
+    deps = MercoaAIDeps(
         supabase=supabase,
         openai_client=openai_client
     )
 
     # Run the agent in a stream
-    async with pydantic_ai_expert.run_stream(
+    async with mercoa_expert.run_stream(
         user_input,
         deps=deps,
         message_history= st.session_state.messages[:-1],  # pass entire conversation so far
@@ -101,13 +101,13 @@ if 'app_ready' not in st.session_state:
 async def main():
     # Set page config at the start
     st.set_page_config(
-        page_title="Pydantic AI Expert",
+        page_title="Mercoa Expert",
         page_icon="🤖",
         layout="wide"
     )
     
-    st.title("Pydantic AI Expert")
-    st.write("Ask any question about Pydantic AI, the hidden truths of the beauty of this framework lie within.")
+    st.title("Mercoa Expert")
+    st.write("Ask any question about Mercoa, the hidden truths of the beauty of this framework lie within.")
 
     # Initialize chat history in session state if not present
     if "messages" not in st.session_state:
@@ -122,7 +122,7 @@ async def main():
                 display_message_part(part)
 
     # Chat input for the user
-    user_input = st.chat_input("What questions do you have about Pydantic AI?")
+    user_input = st.chat_input("What questions do you have about Mercoa?")
 
     if user_input:
         # We append a new request to the conversation explicitly

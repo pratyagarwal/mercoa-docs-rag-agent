@@ -21,13 +21,14 @@ model = OpenAIModel(llm)
 logfire.configure(send_to_logfire='if-token-present')
 
 @dataclass
-class PydanticAIDeps:
+class MercoaAIDeps:
     supabase: Client
     openai_client: AsyncOpenAI
 
 system_prompt = """
-You are an expert at Pydantic AI - a Python AI agent framework that you have access to all the documentation to,
-including examples, an API reference, and other resources to help you build Pydantic AI agents.
+You are an expert at Mercoa - a company that provides a infrastructure for building AP/AR software.
+You have access to all the documentation to,
+including examples, an API reference, and other resources to help you build Mercoa agents.
 
 Your only job is to assist with this and you don't answer other questions besides describing what you are able to do.
 
@@ -39,10 +40,10 @@ Then also always check the list of available documentation pages and retrieve th
 Always let the user know when you didn't find the answer in the documentation or the right URL - be honest.
 """
 
-pydantic_ai_expert = Agent(
+mercoa_expert = Agent(
     model,
     system_prompt=system_prompt,
-    deps_type=PydanticAIDeps,
+    deps_type=MercoaAIDeps,
     retries=2
 )
 
@@ -58,8 +59,8 @@ async def get_embedding(text: str, openai_client: AsyncOpenAI) -> List[float]:
         print(f"Error getting embedding: {e}")
         return [0] * 1536  # Return zero vector on error
 
-@pydantic_ai_expert.tool
-async def retrieve_relevant_documentation(ctx: RunContext[PydanticAIDeps], user_query: str) -> str:
+@mercoa_expert.tool
+async def retrieve_relevant_documentation(ctx: RunContext[MercoaAIDeps], user_query: str) -> str:
     """
     Retrieve relevant documentation chunks based on the query with RAG.
     
@@ -80,7 +81,7 @@ async def retrieve_relevant_documentation(ctx: RunContext[PydanticAIDeps], user_
             {
                 'query_embedding': query_embedding,
                 'match_count': 5,
-                'filter': {'source': 'pydantic_ai_docs'}
+                'filter': {'source': 'mercoa_docs'}
             }
         ).execute()
         
@@ -104,19 +105,19 @@ async def retrieve_relevant_documentation(ctx: RunContext[PydanticAIDeps], user_
         print(f"Error retrieving documentation: {e}")
         return f"Error retrieving documentation: {str(e)}"
 
-@pydantic_ai_expert.tool
-async def list_documentation_pages(ctx: RunContext[PydanticAIDeps]) -> List[str]:
+@mercoa_expert.tool
+async def list_documentation_pages(ctx: RunContext[MercoaAIDeps]) -> List[str]:
     """
-    Retrieve a list of all available Pydantic AI documentation pages.
+    Retrieve a list of all available Mercoa documentation pages.
     
     Returns:
         List[str]: List of unique URLs for all documentation pages
     """
     try:
-        # Query Supabase for unique URLs where source is pydantic_ai_docs
+        # Query Supabase for unique URLs where source is mercoa_docs
         result = ctx.deps.supabase.from_('site_pages') \
             .select('url') \
-            .eq('metadata->>source', 'pydantic_ai_docs') \
+            .eq('metadata->>source', 'mercoa_docs') \
             .execute()
         
         if not result.data:
@@ -130,8 +131,8 @@ async def list_documentation_pages(ctx: RunContext[PydanticAIDeps]) -> List[str]
         print(f"Error retrieving documentation pages: {e}")
         return []
 
-@pydantic_ai_expert.tool
-async def get_page_content(ctx: RunContext[PydanticAIDeps], url: str) -> str:
+@mercoa_expert.tool
+async def get_page_content(ctx: RunContext[MercoaAIDeps], url: str) -> str:
     """
     Retrieve the full content of a specific documentation page by combining all its chunks.
     
@@ -147,7 +148,7 @@ async def get_page_content(ctx: RunContext[PydanticAIDeps], url: str) -> str:
         result = ctx.deps.supabase.from_('site_pages') \
             .select('title, content, chunk_number') \
             .eq('url', url) \
-            .eq('metadata->>source', 'pydantic_ai_docs') \
+            .eq('metadata->>source', 'mercoa_docs') \
             .order('chunk_number') \
             .execute()
         
